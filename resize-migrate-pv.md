@@ -15,14 +15,59 @@ oc run tools --image=image-registry.openshift-image-registry.svc:5000/mq/rhel-to
 oc set volume dc/tools --add -t pvc --name=data-qm3-ibm-mq-0 --claim-name=data-qm3-ibm-mq-0 --mount-path=/old-pv
 oc set volume dc/tools --add -t pvc --name=data-qm3-ibm-mq-c-0 --claim-name=data-qm3-ibm-mq-c-0 --mount-path=/new-pv --claim-class=ceph-sc --claim-mode=ReadWriteOnce --claim-size=20Gi
 
-volumeMounts:
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    run: tools
+  name: tools
+  namespace: mq
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      run: tools
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        run: tools
+    spec:
+      containers:
+      - args:
+        - tail
+        - -f
+        - /dev/null
+        image: icp-cluster.integration.info:8500/mq/rhel-tools
+        imagePullPolicy: Always
+        name: tools
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /old-pv
+          name: data-qm3-ibm-mq-0
         - mountPath: /new-pv
           name: data-qm3-ibm-mq-c-0
-
-volumes:
-    - name: data-qm3-ibm-mq-c-0
-      persistentVolumeClaim:
-        claimName: data-qm3-ibm-mq-x-0
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: data-qm3-ibm-mq-0
+        persistentVolumeClaim:
+          claimName: data-qm3-ibm-mq-0
+      - name: data-qm3-ibm-mq-c-0
+        persistentVolumeClaim:
+          claimName: data-qm3-ibm-mq-x-0
 		
 cat << EOF > mq-new-pvc.yaml		
 apiVersion: v1
@@ -46,7 +91,8 @@ rsync -avxHAX --progress /old-pv/* /new-pv
 ```
 4. Delete the temp deployment
 ```
-oc delete dc tools 
+oc delete dc tools
+kubectl delete deployment/tools
 ```
 
 5. As you can see a new PVC/PV of 20Gi has been created:
