@@ -96,18 +96,10 @@ kubectl delete deployment/tools
 ```
 
 5. As you can see a new PVC/PV of 20Gi has been created:
-* New PVC/PV (20Gi) data-mq-dev-is1a-ibm-mq-0/pvc-64755164-9524-4fe9-a610-39f60c0f498d
-* Old PVC/PV (2Gi) data-mq-dev-is1-ibm-mq-0/pvc-eaa19393-ad1c-4345-a1b0-f6927f61bdfe
-
 * New PVC/PV (20Gi) data-qm3-ibm-mq-c-0/pvc-902d2faa-db82-11eb-8aaa-02e7f1fc1018
 * Old PVC/PV (2Gi)  data-qm3-ibm-mq-0/pvc-3dbaf5bb-6d4b-11ea-8aaa-02e7f1fc1018
 ```
 [root@ocp-inst mq-deploy]# oc get pvc
-NAME                           STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS      AGE
-data-mq-dev-is1-ibm-mq-0       Bound    pvc-eaa19393-ad1c-4345-a1b0-f6927f61bdfe   5Gi        RWO            rook-cephfs       4d20h
-data-mq-dev-is1-ibm-mq-1       Bound    pvc-f2f9f5ce-17bd-4895-93e6-dee748de0a64   2Gi        RWO            rook-cephfs       22d
-data-mq-dev-is1a-ibm-mq-0      Bound    pvc-64755164-9524-4fe9-a610-39f60c0f498d   20Gi       RWO            rook-cephfs       17m
-data-mq-dev-is2-ibm-mq-0       Bound    pvc-bd4f3b39-0409-4d18-8370-a27aefd488c9   2Gi        RWO            rook-cephfs       4d11h
 
 NAME                       STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 data-qm3-ibm-mq-0          Bound    pvc-3dbaf5bb-6d4b-11ea-8aaa-02e7f1fc1018   2Gi        RWO            glusterfs      467d
